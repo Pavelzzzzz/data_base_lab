@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -19,7 +21,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class MainForm extends JDialog {
 
-  private String[] columnsHeader = new String[]{"UserId", "Email", "firstName", "lastName"};
+  private String[] columnsHeader = new String[]{"Email", "firstName", "lastName"};
 
   private JPanel contentPane;
   private JButton buttonUpdate;
@@ -28,6 +30,10 @@ public class MainForm extends JDialog {
   private JTable table;
   private JScrollPane tableScrollPane;
   private JLabel recordCountLable;
+  private JButton buttonLoad;
+  private JButton buttonWrite;
+
+  private List<UserEntity> userEntityList;
 
   public MainForm() {
     setModal(true);
@@ -36,11 +42,32 @@ public class MainForm extends JDialog {
     tableModel = new DefaultTableModel();
     tableModel.setColumnIdentifiers(columnsHeader);
 
-    onUpdate();
-
     table = new JTable(tableModel);
     tableScrollPane.setViewportView(table);
     setContentPane(contentPane);
+
+
+    userEntityList = new LinkedList<UserEntity>();
+    userEntityList.add(UserEntity.builder()
+//        .userId(1)
+        .email("Tom@gmail.com")
+        .firstName("Tom")
+        .lastName("Ankevich")
+        .build());
+
+    userEntityList.add(UserEntity.builder()
+//        .userId(2)
+        .email("Vasia@gmail.com")
+        .firstName("Vasia")
+        .lastName("Pushevich")
+        .build());
+
+    userEntityList.add(UserEntity.builder()
+//        .userId(3)
+        .email("Alex@gmail.com")
+        .firstName("Alex")
+        .lastName("Panko")
+        .build());
 
     buttonUpdate.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -70,14 +97,32 @@ public class MainForm extends JDialog {
                                        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
         JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
+    buttonLoad.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        onLoad();
+      }
+    });
 
+    buttonWrite.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        onWrite();
+      }
+    });
+  }
+
+  private void onWrite() {
+    UserServise.write(userEntityList);
+  }
+
+  private void onLoad() {
+    userEntityList = UserServise.getAll();
+    onUpdate();
   }
 
   private void onAdd() {
-    AddDialog dialog = new AddDialog();
+    AddDialog dialog = new AddDialog(this);
     dialog.pack();
     dialog.setVisible(true);
-    onUpdate();
   }
 
   private void onUpdate() {
@@ -87,8 +132,8 @@ public class MainForm extends JDialog {
     }
 
     for (UserEntity userEntity
-        : UserServise.getAll()) {
-      tableModel.addRow(new Object[]{userEntity.getUserId(),
+        : userEntityList) {
+      tableModel.addRow(new Object[]{//userEntity.getUserId(),
           userEntity.getEmail(),
           userEntity.getFirstName(),
           userEntity.getLastName()});
@@ -99,7 +144,16 @@ public class MainForm extends JDialog {
 
   private void onCancel() {
     // add your code here if necessary
+    UserServise.shutdown();
     dispose();
+  }
+
+  public List<UserEntity> getUserEntityList() {
+    return userEntityList;
+  }
+
+  public void setUserEntityList(List<UserEntity> userEntityList) {
+    this.userEntityList = userEntityList;
   }
 
   public static void main(String[] args) {

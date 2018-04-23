@@ -7,6 +7,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import java.util.Iterator;
 import java.util.List;
+import org.hibernate.exception.SQLGrammarException;
 
 public class UserServise {
 
@@ -16,12 +17,16 @@ public class UserServise {
 
     List <UserEntity> entityList = new LinkedList<UserEntity>();
 
+    try {
     Iterator iterator = session.createCriteria(UserEntity.class).list().iterator();
     while (iterator.hasNext()) {
       entityList.add((UserEntity) iterator.next());
     }
       session.getTransaction().commit();
-      HibernateUtil.shutdown();
+    }
+    catch (SQLGrammarException e){
+      System.err.println(e.getMessage());
+    }
     return entityList;
   }
 
@@ -36,8 +41,23 @@ public class UserServise {
     UserEntity result = (UserEntity) query.list().get(0);
 
     session.getTransaction().commit();
-    HibernateUtil.shutdown();
 
     return result;
+  }
+
+  public static void write(List<UserEntity> userEntityList) {
+    Session session = HibernateUtil.getSessionFactory().openSession();
+    session.beginTransaction();
+
+    for(UserEntity entity
+        : userEntityList){
+      session.saveOrUpdate(entity);
+    }
+
+    session.getTransaction().commit();
+  }
+
+  public static void shutdown(){
+    HibernateUtil.shutdown();
   }
 }

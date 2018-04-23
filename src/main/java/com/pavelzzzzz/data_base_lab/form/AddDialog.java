@@ -1,5 +1,6 @@
 package com.pavelzzzzz.data_base_lab.form;
 
+import com.pavelzzzzz.data_base_lab.dto.UserEntity;
 import com.pavelzzzzz.data_base_lab.service.UserServise;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +23,11 @@ public class AddDialog extends JDialog {
   private JTextField firstNameTextField;
   private JTextField lastNameTextField;
 
-  public AddDialog() {
+  private MainForm mainForm;
+
+  public AddDialog(MainForm mainForm) {
+    this.mainForm = mainForm;
+
     setContentPane(contentPane);
     setModal(true);
     getRootPane().setDefaultButton(buttonOK);
@@ -57,9 +62,12 @@ public class AddDialog extends JDialog {
   }
 
   private void onOK() {
-    UserServise.add(emailTextField.getText(),
-        firstNameTextField.getText(),
-        lastNameTextField.getText());
+    mainForm.getUserEntityList().add(UserEntity.builder()
+//    .userId(mainForm.getUserEntityList().size())
+    .email(emailTextField.getText())
+    .firstName(firstNameTextField.getText())
+    .lastName(lastNameTextField.getText())
+    .build());
     dispose();
   }
 
@@ -68,10 +76,4 @@ public class AddDialog extends JDialog {
     dispose();
   }
 
-  public static void main(String[] args) {
-    AddDialog dialog = new AddDialog();
-    dialog.pack();
-    dialog.setVisible(true);
-    System.exit(0);
-  }
 }
